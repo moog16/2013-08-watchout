@@ -12,7 +12,8 @@
         padding: 10px;
         position: absolute;
         top: 60px;
-        left: 860px;
+        left: 820px;
+        width: 180px;
         background: #ddd;
         text-align: right;
         border-radius: 3px;
@@ -20,7 +21,6 @@
       #scoreBoard span {
         display: inline-block;
         width: 50px;
-        position: absolute;
       }
       #mainBody {
         background: white;
@@ -29,9 +29,9 @@
         height: 700px;
         width: 900px;
       }
-          .svgMain {
-            margin-top: 150px;
-          }
+      .svgMain {
+        margin-top: 150px;
+      }
     </style>
   </head>
   <body>
@@ -45,7 +45,7 @@
   <script>
 
   var boardOptions = {height: 580, width: 900, nEnemies: 30};
-
+  var scoreBoard = {currentScore: 0, bestScore: 0};
   var gameBoard = d3.select('#mainBody')
     .append('svg')
     .attr('class', 'svgMain')
@@ -111,7 +111,7 @@
   };
 
   var detectCollision = function(enemyIndex) {
-    var combinedRadius = 10;
+    var combinedRadius = 20;
     return getDistance(enemyIndex) < combinedRadius;
   };
 
@@ -119,10 +119,18 @@
   setInterval(function() {
     for(var i=0; i < enemy_data.length; i++) {
       if (detectCollision(i)){
+        if(scoreBoard.currentScore > scoreBoard.bestScore){
+          scoreBoard.bestScore = scoreBoard.currentScore;
+        }
+        $('#current-score').html(scoreBoard.currentScore);
+        $('#best-score').html(scoreBoard.bestScore);
         console.log('this is a collision');
+        scoreBoard.currentScore = 0;
      }
     }
-  }, 10);
+    $('#current-score').html(scoreBoard.currentScore);
+    scoreBoard.currentScore++;
+   }, 10);
 
   setInterval(updateEnemies, 1500);
 
