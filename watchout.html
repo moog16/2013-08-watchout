@@ -43,24 +43,24 @@
     </div>
   </body>
   <script>
- 
+
   var boardOptions = {height: 580, width: 900, nEnemies: 30};
- 
+
   var gameBoard = d3.select('#mainBody')
-    .append('svg').
-        attr('class', 'svgMain')
+    .append('svg')
+    .attr('class', 'svgMain')
     .attr('width', boardOptions.width)
     .attr('height', boardOptions.height)
         .attr('display', 'block');
- 
+
   var makeEnemies = function() {
     return _.range(0,boardOptions.nEnemies).map(function(i){
       return {id: i, x: Math.random()*(boardOptions.width-10), y: Math.random()*(boardOptions.height-10)}});
   };
   var enemy_data = makeEnemies();
- 
+
   var enemies = gameBoard.selectAll('circle.enemy').data(enemy_data);
- 
+
   enemies.enter().append('circle')
     .attr('class', 'enemy')
     .attr('cx', function(enemy) {
@@ -69,7 +69,7 @@
       return enemy.y;
     }).attr('r', 10)
     .style("fill", "purple");
- 
+
   var updateEnemies = function() {
     enemies.transition().duration(500).attr('cx', function(enemy) {
       enemy.x = Math.random()*(boardOptions.width-10);
@@ -79,33 +79,52 @@
       return enemy.y;
     });
   };
- 
+
 /******     Player Data     *****/
- 
+
   var player_data = {
     x: boardOptions.width/2,
     y: boardOptions.height/2
   };
- 
- 
+
+
   var playerCreate = gameBoard.append('circle').attr('class', 'player').data(player_data);
- 
+
+
   var player = gameBoard.select('circle.player')
-    .attr("cx", function(playerD) { return boardOptions.width/2; })
-    .attr("cy", function(playerD) { return boardOptions.height/2; })
+    .attr("cx", function() { return boardOptions.width/2; })
+    .attr("cy", function() { return boardOptions.height/2; })
     .attr('r', 10)
     .style('fill', 'green');
-       
+
   var drag = d3.behavior.drag()
-    .on('drag', function(d, i) {
-      d.x += d3.event.dx
-      d.y += d3.event.dy
-      d3.select(this).attr('transform', function(d, i) {
-        return 'translate(' + [d.x, d.y] + ')';
-      })
-    });  
- 
+        .on("drag", function() {
+          //console.log(player.cx.baseVal);
+          player.attr("cx", d3.event.x);
+          player.attr("cy", d3.event.y);
+        });
+
+  player.call(drag);
+
+  var getDistance = function(enemyIndex) {
+    return Math.sqrt(Math.pow(enemy_data[enemyIndex].x - player[0][0]["cx"]["baseVal"]["value"], 2) + Math.pow(enemy_data[enemyIndex].y - player[0][0]["cy"]["baseVal"]["value"], 2));
+  };
+
+  var detectCollision = function(enemyIndex) {
+    var combinedRadius = 10;
+    return getDistance(enemyIndex) < combinedRadius;
+  };
+
+
+  setInterval(function() {
+    for(var i=0; i < enemy_data.length; i++) {
+      if (detectCollision(i)){
+        console.log('this is a collision');
+     }
+    }
+  }, 10);
+
   setInterval(updateEnemies, 1500);
- 
+
   </script>
 </html>
