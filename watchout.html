@@ -37,8 +37,8 @@
   <body>
     <div id="mainBody">
       <div id="scoreBoard">
-        <h3>Current Score: <span id="current-score"></span> </h3>
-        <h3>High Score: <span id="best-score"></span></h3>
+        <h3>Current Score: <span id="current-score">0</span> </h3>
+        <h3>High Score: <span id="best-score">0</span></h3>
       </div>
     </div>
   </body>
@@ -71,13 +71,13 @@
     .style("fill", "purple");
 
   var updateEnemies = function() {
-    enemies.transition().duration(500).attr('cx', function(enemy) {
+    enemies.transition().duration(2000).attr('cx', function(enemy) {
       enemy.x = Math.random()*(boardOptions.width-10);
       return enemy.x;
     }).attr('cy', function(enemy) {
       enemy.y = Math.random()*(boardOptions.height-10);
       return enemy.y;
-    });
+    }).tween('custom', tweenWithCollisionDetection);
   };
 
 /******     Player Data     *****/
@@ -87,9 +87,7 @@
     y: boardOptions.height/2
   };
 
-
   var playerCreate = gameBoard.append('circle').attr('class', 'player').data(player_data);
-
 
   var player = gameBoard.select('circle.player')
     .attr("cx", function() { return boardOptions.width/2; })
@@ -99,40 +97,58 @@
 
   var drag = d3.behavior.drag()
         .on("drag", function() {
-          //console.log(player.cx.baseVal);
-          player.attr("cx", d3.event.x);
-          player.attr("cy", d3.event.y);
+          var user = player[0][0];
+          if(user.cx.baseVal.value < boardOptions.width && user.cx.baseVal.value > 0) {
+            player.attr("cx", d3.event.x);
+          } else if(user.cx.baseVal.value > boardOptions.width-19){
+            player.attr("cx", boardOptions.width-22);
+          } else if(user.cx.baseVal.value < 10){
+            player.attr("cx", 16);
+          }
+          if(user.cy.baseVal.value < boardOptions.height && user.cy.baseVal.value > 0) {
+            player.attr("cy", d3.event.y);
+          } else if(user.cy.baseVal.value < 10) {
+            player.attr("cy", 20);
+          } else if(user.cy.baseVal.value > boardOptions.height-10) {
+            player.attr("cy", boardOptions.height-20);
+          }
         });
 
   player.call(drag);
 
   var getDistance = function(enemyIndex) {
-    return Math.sqrt(Math.pow(enemy_data[enemyIndex].x - player[0][0]["cx"]["baseVal"]["value"], 2) + Math.pow(enemy_data[enemyIndex].y - player[0][0]["cy"]["baseVal"]["value"], 2));
+    var user = player[0][0];
+    return Math.sqrt(Math.pow(enemy_data[enemyIndex].x - user["cx"]["baseVal"]["value"], 2)
+      + Math.pow(enemy_data[enemyIndex].y - user["cy"]["baseVal"]["value"], 2));
   };
 
   var detectCollision = function(enemyIndex) {
-    var combinedRadius = 20;
-    return getDistance(enemyIndex) < combinedRadius;
+    return getDistance(enemyIndex) < 22;
   };
 
 
+
+
   setInterval(function() {
-    for(var i=0; i < enemy_data.length; i++) {
+   for(var i=0; i < enemy_data.length; i++) {
+      //console.log(detectCollision(i));
       if (detectCollision(i)){
+        //console.log("DETECTED");
         if(scoreBoard.currentScore > scoreBoard.bestScore){
           scoreBoard.bestScore = scoreBoard.currentScore;
         }
         $('#current-score').html(scoreBoard.currentScore);
         $('#best-score').html(scoreBoard.bestScore);
-        console.log('this is a collision');
+        //console.log('this is a collision');
         scoreBoard.currentScore = 0;
      }
     }
     $('#current-score').html(scoreBoard.currentScore);
     scoreBoard.currentScore++;
-   }, 10);
+   }, 10); 
 
-  setInterval(updateEnemies, 1500);
+  setInterval(updateEnemies, 2500);
+
 
   </script>
 </html>
